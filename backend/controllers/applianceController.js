@@ -1,27 +1,40 @@
-const Appliance = require('../models/Appliance');
-const { validateAppliance } = require('../validators/applianceValidator');
-const { calculateMonthlyUnits, calculateBill } = require('../services/calculationService');
-const { invalidateUser } = require('../services/aiService');
+const Appliance = require("../models/Appliance");
+const { validateAppliance } = require("../validators/applianceValidator");
+const { calculateMonthlyUnits } = require("../services/calculationService");
+const { invalidateUser } = require("../services/aiService");
 
 async function getAll(req, res) {
-  const appliances = await Appliance.find({ userId: req.user.id }).sort({ createdAt: -1 });
+  const appliances = await Appliance.find({ userId: req.user.id }).sort({
+    createdAt: -1,
+  });
 
   const result = appliances.map((app) => {
-    const monthlyUnits = calculateMonthlyUnits(app.watts, app.hoursPerDay, app.daysPerWeek);
+    const monthlyUnits = calculateMonthlyUnits(
+      app.watts,
+      app.hoursPerDay,
+      app.daysPerWeek
+    );
+
     return {
       ...app.toObject(),
-      monthlyUnits: Math.round(monthlyUnits * 100) / 100,
-      monthlyCost: Math.round(calculateBill(monthlyUnits) * 100) / 100,
+      monthlyUnits: Number(monthlyUnits.toFixed(2)),
     };
   });
 
-  res.json({ success: true, data: result });
+  res.json({
+    success: true,
+    data: result,
+  });
 }
 
 async function create(req, res) {
   const { valid, errors } = validateAppliance(req.body);
+
   if (!valid) {
-    return res.status(400).json({ success: false, errors });
+    return res.status(400).json({
+      success: false,
+      errors,
+    });
   }
 
   const { name, watts, hoursPerDay, daysPerWeek, status } = req.body;
@@ -32,10 +45,14 @@ async function create(req, res) {
     watts: Number(watts),
     hoursPerDay: Number(hoursPerDay),
     daysPerWeek: Number(daysPerWeek),
-    status: status || 'active',
+    status: status || "active",
   });
 
-  const monthlyUnits = calculateMonthlyUnits(appliance.watts, appliance.hoursPerDay, appliance.daysPerWeek);
+  const monthlyUnits = calculateMonthlyUnits(
+    appliance.watts,
+    appliance.hoursPerDay,
+    appliance.daysPerWeek
+  );
 
   invalidateUser(req.user.id);
 
@@ -43,37 +60,53 @@ async function create(req, res) {
     success: true,
     data: {
       ...appliance.toObject(),
-      monthlyUnits: Math.round(monthlyUnits * 100) / 100,
-      monthlyCost: Math.round(calculateBill(monthlyUnits) * 100) / 100,
+      monthlyUnits: Number(monthlyUnits.toFixed(2)),
     },
   });
 }
 
 async function update(req, res) {
   const { valid, errors } = validateAppliance(req.body);
+
   if (!valid) {
-    return res.status(400).json({ success: false, errors });
+    return res.status(400).json({
+      success: false,
+      errors,
+    });
   }
 
   const { name, watts, hoursPerDay, daysPerWeek, status } = req.body;
 
   const appliance = await Appliance.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user.id },
+    {
+      _id: req.params.id,
+      userId: req.user.id,
+    },
     {
       name: name.trim(),
       watts: Number(watts),
       hoursPerDay: Number(hoursPerDay),
       daysPerWeek: Number(daysPerWeek),
-      status: status || 'active',
+      status: status || "active",
     },
-    { new: true, runValidators: true }
+    {
+      new: true,
+      runValidators: true,
+    }
   );
 
   if (!appliance) {
-    return res.status(404).json({ success: false, error: 'Appliance not found' });
+    return res.status(404).json({
+      success: false,
+      error: "Appliance not found",
+    });
   }
 
-  const monthlyUnits = calculateMonthlyUnits(appliance.watts, appliance.hoursPerDay, appliance.daysPerWeek);
+  const monthlyUnits = calculateMonthlyUnits(
+    appliance.watts,
+    appliance.hoursPerDay,
+    appliance.daysPerWeek
+  );
 
   invalidateUser(req.user.id);
 
@@ -81,8 +114,7 @@ async function update(req, res) {
     success: true,
     data: {
       ...appliance.toObject(),
-      monthlyUnits: Math.round(monthlyUnits * 100) / 100,
-      monthlyCost: Math.round(calculateBill(monthlyUnits) * 100) / 100,
+      monthlyUnits: Number(monthlyUnits.toFixed(2)),
     },
   });
 }
@@ -94,12 +126,23 @@ async function remove(req, res) {
   });
 
   if (!appliance) {
-    return res.status(404).json({ success: false, error: 'Appliance not found' });
+    return res.status(404).json({
+      success: false,
+      error: "Appliance not found",
+    });
   }
 
   invalidateUser(req.user.id);
 
-  res.json({ success: true, message: 'Appliance deleted' });
+  res.json({
+    success: true,
+    message: "Appliance deleted",
+  });
 }
 
-module.exports = { getAll, create, update, remove };
+module.exports = {
+  getAll,
+  create,
+  update,
+  remove,
+};

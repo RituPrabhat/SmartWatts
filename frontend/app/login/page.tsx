@@ -34,7 +34,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left branding panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0a1428] via-[#0d1f3c] to-[#071a10] flex-col justify-between p-12 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 bg-[#c6ba51] flex-col justify-between p-12 relative overflow-hidden">
         {/* Decorative rings */}
         <div className="absolute top-[-80px] right-[-80px] w-[340px] h-[340px] rounded-full border border-[#00d9a3]/10 pointer-events-none" />
         <div className="absolute top-[-40px] right-[-40px] w-[220px] h-[220px] rounded-full border border-[#00d9a3]/15 pointer-events-none" />
@@ -53,7 +53,7 @@ export default function LoginPage() {
           <div>
             <h2 className="text-4xl font-bold text-white leading-tight">
               Track. Save.<br />
-              <span className="text-[#00d9a3]">Stay in control.</span>
+              <span className="text-[#d2dadb]">Stay in control.</span>
             </h2>
             <p className="text-[#8fa3c0] mt-4 text-base leading-relaxed max-w-xs">
               Monitor your home electricity usage in real time and cut your bills with smart insights.
@@ -99,7 +99,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 bg-background">
+      <div className="flex-1 flex flex-col items-center justify-center p-6 sm:p-10 bg-[#160735]">
         {/* Mobile logo */}
         <div className="lg:hidden flex items-center gap-2 mb-8">
           <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">

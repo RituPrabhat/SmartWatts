@@ -1,14 +1,11 @@
 /**
  * SmartWatts Calculation Service
- * 
+ *
  * Core business logic for electricity consumption calculations.
- * 
- * Formula:
- *   monthlyUnits = (watts × hoursPerDay × daysPerWeek × 4) / 1000
- *   monthlyBill  = monthlyUnits × RATE_PER_UNIT
  */
 
-const RATE_PER_UNIT = 8; // ₹8 per kWh (Indian electricity rate)
+const tariff = require("./tariffService");
+
 const WEEKS_PER_MONTH = 4;
 
 /**
@@ -26,46 +23,87 @@ function calculateWeeklyUnits(watts, hoursPerDay, daysPerWeek) {
 }
 
 /**
- * Calculate monthly bill from units
+ * Calculate household electricity bill using slab rates
  */
-function calculateBill(units) {
-  return units * RATE_PER_UNIT;
-}
+function calculateBill(units, subsidyEligible = true) {
+  let remaining = units;
+  let energyCharge = 0;
+  let previous = 0;
 
-/**
- * Calculate savings estimate if top appliance reduces usage by 1 hour
- */
-function calculateSavings(topAppliance) {
-  if (!topAppliance) return { units: 0, amount: 0, tip: '' };
+  for (const slab of tariff.slabs) {
+    if (remaining <= 0) break;
 
-  const currentUnits = calculateMonthlyUnits(
-    topAppliance.watts,
-    topAppliance.hoursPerDay,
-    topAppliance.daysPerWeek
-  );
-  const reducedUnits = calculateMonthlyUnits(
-    topAppliance.watts,
-    Math.max(0, topAppliance.hoursPerDay - 1),
-    topAppliance.daysPerWeek
-  );
-  const savedUnits = currentUnits - reducedUnits;
-  const savedAmount = calculateBill(savedUnits);
+    const slabUnits = Math.min(remaining, slab.upto - previous);
+
+    energyCharge += slabUnits * slab.rate;
+
+    remaining -= slabUnits;
+    previous = slab.upto;
+  }
+
+  let subsidy = 0;
+
+  if (subsidyEligible) {
+    if (units <= 200) {
+      subsidy = energyCharge * tariff.subsidy.upto200;
+    } else if (units <= 400) {
+      subsidy = energyCharge * tariff.subsidy.upto400;
+    }
+  }
 
   return {
-    units: Math.round(savedUnits * 100) / 100,
-    amount: Math.round(savedAmount * 100) / 100,
-    tip: `Reduce ${topAppliance.name} usage by 1 hour/day to save ₹${Math.round(savedAmount)}/month`,
+    units: Number(units.toFixed(2)),
+    energyCharge: Number(energyCharge.toFixed(2)),
+    subsidy: Number(subsidy.toFixed(2)),
+    totalBill: Number((energyCharge - subsidy).toFixed(2)),
   };
 }
 
 /**
- * Build full dashboard data from appliances list
+ * Calculate estimated savings by reducing the highest-consuming appliance
+ * by 1 hour/day.
+ */
+function calculateSavings(topAppliance, totalUnits) {
+  if (!topAppliance) {
+    return {
+      units: 0,
+      amount: 0,
+      tip: "",
+    };
+  }
+
+  const savedUnits = calculateMonthlyUnits(
+    topAppliance.watts,
+    1,
+    topAppliance.daysPerWeek
+  );
+
+  const currentBill = calculateBill(totalUnits).totalBill;
+
+  const reducedBill = calculateBill(
+    Math.max(0, totalUnits - savedUnits)
+  ).totalBill;
+
+  const savedAmount = currentBill - reducedBill;
+
+  return {
+    units: Number(savedUnits.toFixed(2)),
+    amount: Number(savedAmount.toFixed(2)),
+    tip: `Reduce ${topAppliance.name} usage by 1 hour/day to save approximately ₹${Math.round(savedAmount)}/month`,
+  };
+}
+
+/**
+ * Build complete dashboard data
  */
 function buildDashboardData(appliances) {
-  // Per-appliance breakdown
   const breakdown = appliances.map((app) => {
-    const monthlyUnits = calculateMonthlyUnits(app.watts, app.hoursPerDay, app.daysPerWeek);
-    const monthlyCost = calculateBill(monthlyUnits);
+    const monthlyUnits = calculateMonthlyUnits(
+      app.watts,
+      app.hoursPerDay,
+      app.daysPerWeek
+    );
+
     return {
       _id: app._id,
       name: app.name,
@@ -73,38 +111,51 @@ function buildDashboardData(appliances) {
       hoursPerDay: app.hoursPerDay,
       daysPerWeek: app.daysPerWeek,
       status: app.status,
-      monthlyUnits: Math.round(monthlyUnits * 100) / 100,
-      monthlyCost: Math.round(monthlyCost * 100) / 100,
+      monthlyUnits: Number(monthlyUnits.toFixed(2)),
     };
   });
 
-  // Totals
-  const totalUnits = breakdown.reduce((sum, b) => sum + b.monthlyUnits, 0);
-  const totalBill = calculateBill(totalUnits);
+  const totalUnits = breakdown.reduce(
+    (sum, item) => sum + item.monthlyUnits,
+    0
+  );
 
-  // Percentages
-  breakdown.forEach((b) => {
-    b.percentage = totalUnits > 0 ? Math.round((b.monthlyUnits / totalUnits) * 100) : 0;
+  const bill = calculateBill(totalUnits);
+
+  breakdown.forEach((item) => {
+    item.percentage =
+      totalUnits > 0
+        ? Math.round((item.monthlyUnits / totalUnits) * 100)
+        : 0;
   });
 
-  // Top appliance (highest monthly units)
-  const sorted = [...breakdown].sort((a, b) => b.monthlyUnits - a.monthlyUnits);
+  const sorted = [...breakdown].sort(
+    (a, b) => b.monthlyUnits - a.monthlyUnits
+  );
+
   const topAppliance = sorted[0] || null;
 
-  // Savings calculation
   const topApplianceRaw = appliances.find(
-    (a) => topAppliance && a._id.toString() === topAppliance._id.toString()
+    (a) =>
+      topAppliance &&
+      a._id.toString() === topAppliance._id.toString()
   );
-  const savings = calculateSavings(topApplianceRaw);
 
-  // Active devices count
-  const activeDevices = appliances.filter((a) => a.status === 'active').length;
+  const savings = calculateSavings(topApplianceRaw, totalUnits);
 
   return {
-    totalUnits: Math.round(totalUnits * 100) / 100,
-    totalBill: Math.round(totalBill * 100) / 100,
-    activeDevices,
+    totalUnits: Number(totalUnits.toFixed(2)),
+
+    totalBill: bill.totalBill,
+
+    billDetails: bill,
+
+    activeDevices: appliances.filter(
+      (a) => a.status === "active"
+    ).length,
+
     totalDevices: appliances.length,
+
     topAppliance: topAppliance
       ? {
           name: topAppliance.name,
@@ -112,14 +163,14 @@ function buildDashboardData(appliances) {
           percentage: topAppliance.percentage,
         }
       : null,
+
     savings,
+
     breakdown,
-    ratePerUnit: RATE_PER_UNIT,
   };
 }
 
 module.exports = {
-  RATE_PER_UNIT,
   calculateMonthlyUnits,
   calculateWeeklyUnits,
   calculateBill,

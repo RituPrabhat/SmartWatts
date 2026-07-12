@@ -12,7 +12,8 @@ import AIChatWidget from '@/components/ai/AIChatWidget';
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { fetchAll } = useStore();
 
   useEffect(() => {
@@ -44,10 +45,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <DashboardLayout
-      sidebar={<SidebarNav />}
-      topbar={<TopNavbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />}
-      sidebarOpen={sidebarOpen}
-      onCloseSidebar={() => setSidebarOpen(false)}
+      desktopSidebar={<SidebarNav collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />}
+      mobileSidebar={<SidebarNav onNavigate={() => setMobileOpen(false)} onClose={() => setMobileOpen(false)} />}
+      topbar={<TopNavbar onOpenMobile={() => setMobileOpen(true)} />}
+      collapsed={collapsed}
+      mobileOpen={mobileOpen}
+      onCloseMobile={() => setMobileOpen(false)}
     >
       {children}
       <AIChatWidget />

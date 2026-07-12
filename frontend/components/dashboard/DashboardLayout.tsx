@@ -1,58 +1,57 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 interface DashboardLayoutProps {
-  sidebar: ReactNode;
+  desktopSidebar: ReactNode;
+  mobileSidebar: ReactNode;
   topbar: ReactNode;
   children: ReactNode;
-  sidebarOpen: boolean;
-  onCloseSidebar?: () => void;
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
 }
 
 export default function DashboardLayout({
-  sidebar,
+  desktopSidebar,
+  mobileSidebar,
   topbar,
   children,
-  sidebarOpen,
-  onCloseSidebar,
+  collapsed,
+  mobileOpen,
+  onCloseMobile,
 }: DashboardLayoutProps) {
   return (
-    <div className="h-screen bg-background text-foreground overflow-hidden flex flex-col relative">
-      {/* Ambient mesh gradient background */}
-      <div className="fixed inset-0 mesh-bg pointer-events-none z-0" />
+    <div className="h-screen dot-grid text-foreground overflow-hidden flex flex-col">
+      {/* Floating glass navbar (matches the sidebar) */}
+      <div className="flex-shrink-0 px-3 pt-3 z-20">{topbar}</div>
 
-      {/* Top Navbar */}
-      <div className="flex-shrink-0 relative z-20">{topbar}</div>
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden relative z-10">
-        {/* Desktop Sidebar — animated slide */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar — floating glass panel, collapsible to an icon rail */}
         <div
-          className={`hidden md:block overflow-y-auto transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] border-r border-border ${
-            sidebarOpen ? 'w-64 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+          className={`hidden md:block flex-shrink-0 transition-[width] duration-300 ease-out ${
+            collapsed ? 'w-[84px]' : 'w-64'
           }`}
-          style={{ backgroundColor: 'var(--sidebar)' }}
         >
-          <div className="w-64 glass-strong h-full">
-            {sidebar}
+          <div className="h-full p-3 pr-0">
+            <div className="h-full glass-panel rounded-2xl overflow-y-auto">{desktopSidebar}</div>
           </div>
         </div>
 
         {/* Mobile Sidebar Overlay */}
-        {sidebarOpen && (
-          <div className="fixed inset-0 z-30 md:hidden">
+        {mobileOpen && (
+          <div className="fixed inset-0 z-60 md:hidden">
             <div
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-              onClick={onCloseSidebar}
+              className="absolute inset-0 bg-[#0f1b2d]/50 animate-fade-in"
+              onClick={onCloseMobile}
             />
-            <div className="relative w-64 h-full glass-strong overflow-y-auto z-10 animate-slide-in-left shadow-2xl">
-              {sidebar}
+            <div className="relative w-72 max-w-[82%] h-full z-10 bg-card border-r border-border shadow-(--shadow-md) overflow-y-auto animate-fade-in">
+              {mobileSidebar}
             </div>
           </div>
         )}
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-8 max-w-[1600px] mx-auto">{children}</div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto min-w-0">
+          <div className="p-4 md:px-6 md:py-6 max-w-[1600px] mx-auto">{children}</div>
         </div>
       </div>
     </div>

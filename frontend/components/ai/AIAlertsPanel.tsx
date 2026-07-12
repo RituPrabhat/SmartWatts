@@ -13,22 +13,16 @@ const alertIcons = {
 
 const alertStyles = {
   high: {
-    border: 'border-destructive/20',
-    bg: 'bg-destructive/5',
+    icon: 'text-destructive',
     dot: 'bg-destructive',
-    glow: 'shadow-destructive/10',
   },
   medium: {
-    border: 'border-[#ffab40]/20',
-    bg: 'bg-[#ffab40]/5',
-    dot: 'bg-[#ffab40]',
-    glow: 'shadow-[#ffab40]/10',
+    icon: 'text-warning',
+    dot: 'bg-warning',
   },
   low: {
-    border: 'border-primary/20',
-    bg: 'bg-primary/5',
+    icon: 'text-primary',
     dot: 'bg-primary',
-    glow: 'shadow-primary/10',
   },
 };
 
@@ -58,22 +52,22 @@ export default function AIAlertsPanel() {
         return (
           <div
             key={idx}
-            className={`glass-card rounded-xl p-4 ${styles.border} ${styles.bg} flex items-start gap-3 animate-fade-up stagger-${idx + 1} group hover:shadow-lg ${styles.glow} transition-all duration-300`}
+            className="card p-4 flex items-start gap-3 group"
           >
             <div className="relative flex-shrink-0 mt-0.5">
-              <Icon className="w-5 h-5 text-foreground" />
-              <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ${styles.dot} animate-pulse-dot`} />
+              <Icon className={`w-5 h-5 ${styles.icon}`} />
+              <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full ${styles.dot}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-foreground text-sm">{alert.title}</p>
+              <p className="font-medium text-foreground text-sm">{alert.title}</p>
               <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{alert.message}</p>
             </div>
             <button
               onClick={() => setDismissed((prev) => new Set(prev).add(realIdx))}
-              className="p-1.5 hover:bg-muted rounded-lg transition-all duration-300 flex-shrink-0 opacity-0 group-hover:opacity-100 hover:scale-110"
+              className="p-1.5 hover:bg-muted rounded-lg transition-colors flex-shrink-0 text-muted-foreground"
               aria-label="Dismiss"
             >
-              <X className="w-3.5 h-3.5 text-muted-foreground" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         );

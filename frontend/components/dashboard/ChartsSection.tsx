@@ -21,7 +21,17 @@ interface ChartsSectionProps {
   weeklyTrend: WeeklyDataPoint[]
 }
 
-const COLORS = ['#0ea5e9', '#00e5ff', '#a78bfa', '#f43f5e', '#ffab40', '#22c55e', '#818cf8', '#fb923c']
+const COLORS = ['#2563eb', '#0ea5e9', '#7c3aed', '#f59e0b', '#10b981', '#ef4444', '#3b82f6', '#ec4899']
+
+const tooltipStyle = {
+  backgroundColor: 'var(--card)',
+  border: '1px solid var(--border)',
+  borderRadius: '0.5rem',
+  color: 'var(--foreground)',
+  fontFamily: 'Inter',
+  boxShadow: 'var(--shadow-md)',
+  fontSize: 12,
+}
 
 export default function ChartsSection({ dashboard, weeklyTrend }: ChartsSectionProps) {
   const pieData =
@@ -36,34 +46,20 @@ export default function ChartsSection({ dashboard, weeklyTrend }: ChartsSectionP
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
       {/* Weekly Usage Chart */}
-      <div className="glass-card rounded-2xl p-6 animate-fade-up stagger-1">
+      <div className="card p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-foreground mb-1">Weekly Usage</h2>
-          <p className="text-xs text-muted-foreground font-medium">kWh consumption trend</p>
+          <h2 className="text-base font-semibold text-foreground mb-0.5">Weekly Usage</h2>
+          <p className="text-xs text-muted-foreground">kWh consumption trend</p>
         </div>
 
         {hasTrendData ? (
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyTrend} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-              <defs>
-                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#0ea5e9" />
-                  <stop offset="100%" stopColor="#00e5ff" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} fontFamily="Inter" />
-              <YAxis stroke="var(--muted-foreground)" fontSize={11} fontFamily="Inter" />
+            <LineChart data={weeklyTrend} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+              <XAxis dataKey="label" stroke="var(--muted-foreground)" fontSize={11} fontFamily="Inter" tickLine={false} axisLine={{ stroke: 'var(--border)' }} />
+              <YAxis stroke="var(--muted-foreground)" fontSize={11} fontFamily="Inter" tickLine={false} axisLine={false} />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--card-solid)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.75rem',
-                  color: 'var(--foreground)',
-                  fontFamily: 'Inter',
-                  backdropFilter: 'blur(16px)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                }}
+                contentStyle={tooltipStyle}
                 labelStyle={{ color: 'var(--foreground)', fontWeight: 600 }}
                 formatter={(value) => [`${Number(value).toFixed(2)} kWh`, '']}
               />
@@ -72,24 +68,24 @@ export default function ChartsSection({ dashboard, weeklyTrend }: ChartsSectionP
                 type="monotone"
                 dataKey="usage"
                 name="Usage"
-                stroke="url(#lineGrad)"
-                strokeWidth={3}
-                dot={{ fill: '#0ea5e9', r: 4, strokeWidth: 2, stroke: '#0ea5e9' }}
-                activeDot={{ r: 7, fill: '#00e5ff', stroke: '#0ea5e9', strokeWidth: 2 }}
+                stroke="var(--chart-1)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--chart-1)', r: 3 }}
+                activeDot={{ r: 5 }}
               />
               <Line
                 type="monotone"
                 dataKey="target"
                 name="Target"
                 stroke="var(--muted-foreground)"
-                strokeWidth={2}
-                strokeDasharray="6 4"
+                strokeWidth={1.5}
+                strokeDasharray="5 4"
                 dot={false}
               />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          <div className="h-75 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-muted flex items-center justify-center">
                 <BarChartIcon className="w-6 h-6 opacity-40" />
@@ -102,25 +98,17 @@ export default function ChartsSection({ dashboard, weeklyTrend }: ChartsSectionP
       </div>
 
       {/* Appliance Distribution Chart */}
-      <div className="glass-card rounded-2xl p-6 animate-fade-up stagger-2">
+      <div className="card p-6">
         <div className="mb-6">
-          <h2 className="text-lg font-bold text-foreground mb-1">
+          <h2 className="text-base font-semibold text-foreground mb-0.5">
             Appliance Distribution
           </h2>
-          <p className="text-xs text-muted-foreground font-medium">Percentage of total monthly usage</p>
+          <p className="text-xs text-muted-foreground">Percentage of total monthly usage</p>
         </div>
 
         {hasChartData ? (
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <defs>
-                {COLORS.map((color, i) => (
-                  <linearGradient key={i} id={`pieGrad-${i}`} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor={color} stopOpacity={1} />
-                    <stop offset="100%" stopColor={color} stopOpacity={0.7} />
-                  </linearGradient>
-                ))}
-              </defs>
               <Pie
                 data={pieData}
                 cx="50%"
@@ -128,31 +116,23 @@ export default function ChartsSection({ dashboard, weeklyTrend }: ChartsSectionP
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
-                innerRadius={45}
-                fill="#8884d8"
+                innerRadius={55}
                 dataKey="value"
                 strokeWidth={2}
-                stroke="var(--background)"
+                stroke="var(--card)"
               >
                 {pieData.map((_entry, index) => (
-                  <Cell key={`cell-${index}`} fill={`url(#pieGrad-${index % COLORS.length})`} />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'var(--card-solid)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '0.75rem',
-                  color: 'var(--foreground)',
-                  fontFamily: 'Inter',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                }}
+                contentStyle={tooltipStyle}
                 formatter={(value) => [`${Number(value).toFixed(2)} kWh`, 'Monthly Units']}
               />
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+          <div className="h-75 flex items-center justify-center text-muted-foreground">
             <div className="text-center">
               <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-muted flex items-center justify-center">
                 <PieChartIcon className="w-6 h-6 opacity-40" />

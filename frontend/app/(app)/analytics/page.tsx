@@ -13,58 +13,31 @@ export default function AnalyticsPage() {
   const totalBill = dashboard?.totalBill ?? 0;
 
   const statCards = [
+    {  label: 'Monthly Units', value: `${totalUnits} kWh` },
+    {  label: 'Monthly Bill', value: `₹${totalBill.toLocaleString()}` },
+    {  label: 'Active Devices', value: `${dashboard?.activeDevices ?? 0}` },
     {
-      icon: Zap,
-      label: 'Monthly Units',
-      value: `${totalUnits} kWh`,
-      gradient: 'from-[#0ea5e9] to-[#00e5ff]',
-      iconBg: 'bg-primary/10',
-    },
-    {
-      icon: DollarSign,
-      label: 'Monthly Bill',
-      value: `₹${totalBill.toLocaleString()}`,
-      gradient: 'from-[#a78bfa] to-[#818cf8]',
-      iconBg: 'bg-[#a78bfa]/10',
-    },
-    {
-      icon: BarChart3,
-      label: 'Active Devices',
-      value: `${dashboard?.activeDevices ?? 0}`,
-      gradient: 'from-[#ffab40] to-[#ff8a65]',
-      iconBg: 'bg-[#ffab40]/10',
-    },
-    {
-      icon: TrendingUp,
       label: 'Avg per Device',
       value: appliances.length > 0 ? `${(totalUnits / appliances.length).toFixed(1)} kWh` : '0 kWh',
-      gradient: 'from-[#22c55e] to-[#4ade80]',
-      iconBg: 'bg-[#22c55e]/10',
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="animate-fade-up">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Analytics</h1>
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">Analytics</h1>
         <p className="text-muted-foreground mt-1 text-sm">Detailed energy consumption insights and trends</p>
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((card, idx) => {
-          const CardIcon = card.icon;
+        {statCards.map((card) => {
           return (
-            <div
-              key={card.label}
-              className={`glass-card rounded-2xl p-5 flex items-center gap-4 group animate-fade-up stagger-${idx + 1}`}
-            >
-              <div className={`w-11 h-11 rounded-xl ${card.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-                <CardIcon className="w-5 h-5" style={{ color: 'var(--primary)' }} />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">{card.label}</p>
-                <p className="text-xl font-bold text-foreground">{card.value}</p>
+            <div key={card.label} className="card p-5 flex items-center gap-4">
+             
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{card.label}</p>
+                <p className="text-xl font-semibold text-foreground truncate">{card.value}</p>
               </div>
             </div>
           );
@@ -82,8 +55,8 @@ export default function AnalyticsPage() {
 
       {/* Cost breakdown table */}
       {appliances.length > 0 && (
-        <div className="glass-card rounded-2xl p-6 animate-fade-up">
-          <h2 className="text-lg font-bold text-foreground mb-4">Appliance Cost Breakdown</h2>
+        <div className="card p-6">
+          <h2 className="text-base font-semibold text-foreground mb-4">Appliance Cost Breakdown</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -101,19 +74,19 @@ export default function AnalyticsPage() {
                 {(dashboard?.breakdown ?? []).map((b, idx) => (
                   <tr
                     key={b._id}
-                    className={`border-b border-border/50 hover:bg-primary/[0.03] transition-all duration-300 animate-fade-up stagger-${Math.min(idx + 1, 8)} ${idx === (dashboard?.breakdown?.length ?? 0) - 1 ? 'border-b-0' : ''}`}
+                    className={`border-b border-border hover:bg-muted/50 transition-colors ${idx === (dashboard?.breakdown?.length ?? 0) - 1 ? 'border-b-0' : ''}`}
                   >
-                    <td className="py-3 px-4 font-semibold text-foreground">{b.name}</td>
+                    <td className="py-3 px-4 font-medium text-foreground">{b.name}</td>
                     <td className="py-3 px-4 text-right text-foreground">{b.watts}W</td>
                     <td className="py-3 px-4 text-right text-foreground">{b.hoursPerDay}h</td>
                     <td className="py-3 px-4 text-right text-foreground">{b.daysPerWeek}d</td>
-                    <td className="py-3 px-4 text-right font-bold text-foreground">{b.monthlyUnits} kWh</td>
-                    <td className="py-3 px-4 text-right font-bold text-gradient">₹{b.monthlyCost}</td>
+                    <td className="py-3 px-4 text-right font-medium text-foreground">{b.monthlyUnits} kWh</td>
+                    <td className="py-3 px-4 text-right font-medium text-foreground">₹{b.monthlyCost}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <div className="w-12 h-1.5 bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-primary rounded-full animate-progress-fill"
+                            className="h-full bg-primary rounded-full"
                             style={{ width: `${b.percentage}%` }}
                           />
                         </div>
@@ -129,11 +102,11 @@ export default function AnalyticsPage() {
       )}
 
       {appliances.length === 0 && (
-        <div className="glass-card rounded-2xl p-16 text-center animate-fade-up">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
-            <BarChart3 className="w-8 h-8 text-muted-foreground opacity-30" />
+        <div className="card p-16 text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-muted flex items-center justify-center">
+            <BarChart3 className="w-7 h-7 text-muted-foreground" />
           </div>
-          <p className="font-semibold text-foreground/70">No analytics data yet</p>
+          <p className="font-medium text-foreground">No analytics data yet</p>
           <p className="text-sm text-muted-foreground mt-1">Add appliances from the Devices page to see analytics</p>
         </div>
       )}

@@ -2,6 +2,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+// Force a reliable DNS resolver for Atlas SRV lookups (Node's c-ares resolver
+// can fail with querySrv ECONNREFUSED when the system DNS is IPv6-only).
+require('node:dns').setServers(['8.8.8.8', '1.1.1.1']);
+
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const authMiddleware = require('./middleware/auth');

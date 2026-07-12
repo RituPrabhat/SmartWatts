@@ -31,27 +31,9 @@ const faqs = [
 ];
 
 const quickLinks = [
-  {
-    icon: BookOpen,
-    title: 'Documentation',
-    desc: 'Learn how to use SmartWatts',
-    iconBg: 'bg-primary/10',
-    gradient: 'from-[#0ea5e9] to-[#00e5ff]',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Feedback',
-    desc: 'Share your suggestions',
-    iconBg: 'bg-[#22c55e]/10',
-    gradient: 'from-[#22c55e] to-[#4ade80]',
-  },
-  {
-    icon: Mail,
-    title: 'Contact',
-    desc: 'support@smartwatts.app',
-    iconBg: 'bg-[#a78bfa]/10',
-    gradient: 'from-[#a78bfa] to-[#818cf8]',
-  },
+  { icon: BookOpen, title: 'Documentation', desc: 'Learn how to use SmartWatts' },
+  { icon: MessageCircle, title: 'Feedback', desc: 'Share your suggestions' },
+  { icon: Mail, title: 'Contact', desc: 'support@smartwatts.app' },
 ];
 
 export default function SupportPage() {
@@ -62,28 +44,27 @@ export default function SupportPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="animate-fade-up">
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">Help & Support</h1>
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">Help &amp; Support</h1>
         <p className="text-muted-foreground mt-1 text-sm">Find answers to common questions and get help</p>
       </div>
 
       {/* Quick links */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {quickLinks.map((link, idx) => {
+        {quickLinks.map((link) => {
           const LinkIcon = link.icon;
           return (
             <div
               key={link.title}
-              className={`glass-card rounded-2xl p-5 flex items-center gap-4 group cursor-pointer relative overflow-hidden animate-fade-up stagger-${idx + 1}`}
+              className="card p-5 flex items-center gap-4 cursor-pointer hover:border-[color-mix(in_srgb,var(--primary)_40%,var(--border))] transition-colors"
             >
-              <div className={`absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r ${link.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-              <div className={`w-11 h-11 rounded-xl ${link.iconBg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}>
-                <LinkIcon className="w-5 h-5 text-primary" />
+              <div className="w-11 h-11 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                <LinkIcon className="w-5 h-5 text-muted-foreground" />
               </div>
-              <div>
-                <p className="font-semibold text-foreground text-sm">{link.title}</p>
-                <p className="text-xs text-muted-foreground">{link.desc}</p>
+              <div className="min-w-0">
+                <p className="font-medium text-foreground text-sm">{link.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{link.desc}</p>
               </div>
             </div>
           );
@@ -91,43 +72,39 @@ export default function SupportPage() {
       </div>
 
       {/* FAQ */}
-      <div className="glass-card rounded-2xl p-6 animate-fade-up stagger-4">
+      <div className="card p-6">
         <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <HelpCircle className="w-4 h-4 text-primary" />
+          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+            <HelpCircle className="w-4 h-4 text-accent-foreground" />
           </div>
-          <h2 className="text-lg font-bold text-foreground">Frequently Asked Questions</h2>
+          <h2 className="text-base font-semibold text-foreground">Frequently Asked Questions</h2>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {faqs.map((faq, idx) => {
             const isOpen = openFaq === idx;
             return (
               <div
                 key={idx}
-                className={`rounded-xl border transition-all duration-300 ${
-                  isOpen ? 'border-primary/20 bg-primary/[0.03]' : 'border-border glass'
-                } animate-fade-up stagger-${Math.min(idx + 1, 8)}`}
+                className={`rounded-lg border transition-colors ${
+                  isOpen ? 'border-primary bg-accent' : 'border-border bg-muted/40'
+                }`}
               >
                 <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full flex items-center gap-3 p-4 text-left group"
+                  className="w-full flex items-center gap-3 p-4 text-left"
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                    isOpen ? 'bg-primary/10' : 'bg-muted'
-                  }`}>
-                    <Zap className={`w-4 h-4 transition-colors duration-300 ${isOpen ? 'text-primary' : 'text-muted-foreground'}`} />
-                  </div>
-                  <p className={`font-semibold text-sm flex-1 transition-colors duration-300 ${isOpen ? 'text-primary' : 'text-foreground'}`}>
+
+                  <p className={`font-medium text-sm flex-1 ${isOpen ? 'text-accent-foreground' : 'text-foreground'}`}>
                     {faq.q}
                   </p>
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 text-primary' : ''}`} />
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
                     isOpen ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <p className="text-sm text-muted-foreground px-4 pb-4 pl-[3.75rem] leading-relaxed">
+                  <p className="text-sm text-muted-foreground px-4 pb-4 leading-relaxed">
                     {faq.a}
                   </p>
                 </div>

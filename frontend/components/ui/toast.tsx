@@ -22,7 +22,7 @@ const Toast = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={`rounded-md border bg-white p-4 shadow-md ${className || ""}`}
+    className={`rounded-md border border-border bg-card text-card-foreground p-4 shadow-(--shadow-md) ${className || ""}`}
     {...props}
   />
 ))

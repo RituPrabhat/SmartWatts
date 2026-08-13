@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# personal notes, not for GitHub
+PROJECT_GUIDE.md
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

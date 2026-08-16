@@ -1,12 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
+import * as api from '@/lib/api';
 import AIBudgetCard from '@/components/ai/AIBudgetCard';
 import { Button } from '@/components/ui/button';
 import { User, Mail, LogOut, Zap } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
+  const [savingSubsidy, setSavingSubsidy] = useState(false);
+
+  async function toggleSubsidy() {
+    const next = !user?.hasSubsidy;
+    setSavingSubsidy(true);
+    try {
+      await api.updateSubsidy(next);
+      updateUser({ hasSubsidy: next });
+    } finally {
+      setSavingSubsidy(false);
+    }
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -68,9 +82,37 @@ export default function SettingsPage() {
             <Zap className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <p className="font-semibold text-foreground">₹8 per kWh</p>
-            <p className="text-xs text-muted-foreground">Default Indian electricity rate (customization coming soon)</p>
+            <p className="font-semibold text-foreground">Delhi slab tariff</p>
+            <p className="text-xs text-muted-foreground">
+              ₹3.00/unit (0–200) · ₹4.50/unit (201–400) · ₹6.50/unit (401–800) · ₹8.00/unit (800+)
+            </p>
           </div>
+        </div>
+      </div>
+
+      {/* Subsidy connection */}
+      <div className="card p-6">
+        <h2 className="text-base font-semibold text-foreground mb-1">Government Subsidy</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          If your electricity connection is opted in for the government subsidy, your bill gets
+          100% off on the first 200 units and 50% off (capped at ₹800/month) on units 201–400.
+        </p>
+        <div className="flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-muted/40">
+          <div>
+            <p className="font-medium text-foreground">
+              {user?.hasSubsidy ? 'Subsidy connection: On' : 'Subsidy connection: Off'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Turn this on if your electricity connection has the subsidy applied.
+            </p>
+          </div>
+          <Button
+            variant={user?.hasSubsidy ? 'default' : 'outline'}
+            onClick={toggleSubsidy}
+            disabled={savingSubsidy}
+          >
+            {user?.hasSubsidy ? 'Disable' : 'Enable'}
+          </Button>
         </div>
       </div>
 

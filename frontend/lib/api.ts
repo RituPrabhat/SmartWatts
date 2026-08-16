@@ -69,6 +69,13 @@ export async function getMe(): Promise<User> {
   return request<User>('/auth/me');
 }
 
+export async function updateSubsidy(hasSubsidy: boolean): Promise<{ hasSubsidy: boolean }> {
+  return request<{ hasSubsidy: boolean }>('/auth/subsidy', {
+    method: 'PUT',
+    body: JSON.stringify({ hasSubsidy }),
+  });
+}
+
 // Appliances
 export async function getAppliances(): Promise<Appliance[]> {
   return request<Appliance[]>('/appliances');

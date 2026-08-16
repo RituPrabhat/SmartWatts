@@ -13,6 +13,7 @@ interface AuthContextType {
   login: (data: LoginData) => Promise<void>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => void;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -60,6 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(result.user);
   }, []);
 
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      localStorage.setItem('smartwatts_user', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('smartwatts_token');
     localStorage.removeItem('smartwatts_user');
@@ -78,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         signup: signupFn,
         logout,
+        updateUser,
       }}
     >
       {children}

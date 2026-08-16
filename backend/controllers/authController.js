@@ -77,8 +77,24 @@ async function getMe(req, res) {
 
   res.json({
     success: true,
-    data: { _id: user._id, name: user.name, email: user.email },
+    data: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      hasSubsidy: user.hasSubsidy,
+    },
   });
 }
 
-module.exports = { signup, login, getMe };
+async function updateSubsidy(req, res) {
+  const { hasSubsidy } = req.body;
+  if (typeof hasSubsidy !== 'boolean') {
+    return res.status(400).json({ success: false, error: 'hasSubsidy must be true or false' });
+  }
+
+  await User.findByIdAndUpdate(req.user.id, { hasSubsidy });
+
+  res.json({ success: true, data: { hasSubsidy } });
+}
+
+module.exports = { signup, login, getMe, updateSubsidy };

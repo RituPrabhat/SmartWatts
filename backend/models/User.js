@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       default: null,
       min: [0, 'Budget cannot be negative'],
     },
+    hasSubsidy: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

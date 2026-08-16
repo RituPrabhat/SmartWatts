@@ -70,6 +70,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  hasSubsidy?: boolean;
 }
 
 export interface LoginData {

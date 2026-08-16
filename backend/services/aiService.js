@@ -1,5 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { buildDashboardData, RATE_PER_UNIT, calculateMonthlyUnits, calculateBill } = require('./calculationService');
+const { buildDashboardData, calculateMonthlyUnits, calculateBill } = require('./calculationService');
 const prompts = require('./aiPrompts');
 
 let genAI = null;

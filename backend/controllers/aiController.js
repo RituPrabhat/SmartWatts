@@ -8,7 +8,7 @@ async function getUserData(userId) {
     Appliance.find({ userId }),
     User.findById(userId),
   ]);
-  const dashboard = buildDashboardData(appliances);
+  const dashboard = buildDashboardData(appliances, Boolean(user?.hasSubsidy));
   return { appliances, dashboard, budget: user?.monthlyBudget || null };
 }
 

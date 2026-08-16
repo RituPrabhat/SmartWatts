@@ -25,7 +25,7 @@ function calculateWeeklyUnits(watts, hoursPerDay, daysPerWeek) {
 /**
  * Calculate household electricity bill using slab rates
  */
-function calculateBill(units, subsidyEligible = true) {
+function calculateBill(units, subsidyEligible = false) {
   let remaining = units;
   let energyCharge = 0;
   let previous = 0;
@@ -47,7 +47,10 @@ function calculateBill(units, subsidyEligible = true) {
     if (units <= 200) {
       subsidy = energyCharge * tariff.subsidy.upto200;
     } else if (units <= 400) {
-      subsidy = energyCharge * tariff.subsidy.upto400;
+      subsidy = Math.min(
+        energyCharge * tariff.subsidy.upto400,
+        tariff.subsidy.upto400Cap
+      );
     }
   }
 
@@ -63,7 +66,7 @@ function calculateBill(units, subsidyEligible = true) {
  * Calculate estimated savings by reducing the highest-consuming appliance
  * by 1 hour/day.
  */
-function calculateSavings(topAppliance, totalUnits) {
+function calculateSavings(topAppliance, totalUnits, subsidyEligible = false) {
   if (!topAppliance) {
     return {
       units: 0,
@@ -78,10 +81,11 @@ function calculateSavings(topAppliance, totalUnits) {
     topAppliance.daysPerWeek
   );
 
-  const currentBill = calculateBill(totalUnits).totalBill;
+  const currentBill = calculateBill(totalUnits, subsidyEligible).totalBill;
 
   const reducedBill = calculateBill(
-    Math.max(0, totalUnits - savedUnits)
+    Math.max(0, totalUnits - savedUnits),
+    subsidyEligible
   ).totalBill;
 
   const savedAmount = currentBill - reducedBill;
@@ -96,7 +100,7 @@ function calculateSavings(topAppliance, totalUnits) {
 /**
  * Build complete dashboard data
  */
-function buildDashboardData(appliances) {
+function buildDashboardData(appliances, subsidyEligible = false) {
   const breakdown = appliances.map((app) => {
     const monthlyUnits = calculateMonthlyUnits(
       app.watts,
@@ -120,12 +124,23 @@ function buildDashboardData(appliances) {
     0
   );
 
-  const bill = calculateBill(totalUnits);
+  const bill = calculateBill(totalUnits, subsidyEligible);
+
+  const ratePerUnit =
+    totalUnits > 0 ? Number((bill.totalBill / totalUnits).toFixed(2)) : 0;
 
   breakdown.forEach((item) => {
     item.percentage =
       totalUnits > 0
         ? Math.round((item.monthlyUnits / totalUnits) * 100)
+        : 0;
+
+    // Proportional share of the household bill, split by each appliance's
+    // share of total units (the tariff itself is only computed once, on the
+    // household total, since slab rates aren't meaningful per-appliance).
+    item.monthlyCost =
+      totalUnits > 0
+        ? Number(((item.monthlyUnits / totalUnits) * bill.totalBill).toFixed(2))
         : 0;
   });
 
@@ -141,12 +156,14 @@ function buildDashboardData(appliances) {
       a._id.toString() === topAppliance._id.toString()
   );
 
-  const savings = calculateSavings(topApplianceRaw, totalUnits);
+  const savings = calculateSavings(topApplianceRaw, totalUnits, subsidyEligible);
 
   return {
     totalUnits: Number(totalUnits.toFixed(2)),
 
     totalBill: bill.totalBill,
+
+    ratePerUnit,
 
     billDetails: bill,
 

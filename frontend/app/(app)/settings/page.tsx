@@ -107,7 +107,7 @@ export default function SettingsPage() {
             </p>
           </div>
           <Button
-            variant={user?.hasSubsidy ? 'default' : 'outline'}
+            variant={user?.hasSubsidy ? 'primary' : 'outline'}
             onClick={toggleSubsidy}
             disabled={savingSubsidy}
           >

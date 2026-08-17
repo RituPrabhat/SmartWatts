@@ -22,7 +22,8 @@ That loop — log usage, see the projected cost broken down by appliance, get bu
 
 - **Appliance tracking** — add appliances with their wattage, usage hours per day, and days per week; mark them active or on standby.
 - **Usage logging** — log weekly usage per appliance and see units consumed and cost, including weekly trend charts.
-- **Bill estimation** — slab-based tariff calculation engine (modeled on Delhi electricity tariffs, including subsidy logic) that estimates your monthly and weekly bill from actual usage.
+- **Bill estimation** — slab-based tariff calculation engine (modeled on Delhi electricity tariffs) that estimates your monthly and weekly bill from actual usage, with month-length-aware projections.
+- **Subsidy toggle** — mark whether your electricity connection is opted into the government subsidy scheme, and your bill is recalculated accordingly (100% off up to 200 units, 50% off up to 400 units, capped at ₹800/month).
 - **Dashboard & analytics** — aggregated stats, appliance breakdown, and consumption charts.
 - **Budget tracking** — set a monthly budget and monitor spend against it.
 - **AI assistant (Google Gemini)** — chat with an assistant about your usage, get automated insights, monthly reports, alerts, and personalized budget advice.
@@ -125,7 +126,8 @@ npm run lint    # lint the codebase
 
 All backend routes are prefixed with `/api`:
 
-- `POST /api/auth/signup`, `POST /api/auth/login` — authentication
+- `POST /api/auth/signup`, `POST /api/auth/login`, `GET /api/auth/me` — authentication
+- `PUT /api/auth/subsidy` — toggle whether the user's connection has the government subsidy applied
 - `GET|POST|PUT|DELETE /api/appliances` — manage appliances
 - `POST /api/usage`, `GET /api/usage/weekly-trend` — usage logging and trends
 - `GET /api/dashboard` — aggregated dashboard stats

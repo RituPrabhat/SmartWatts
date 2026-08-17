@@ -24,7 +24,37 @@ const APPLIANCE_PRESETS: { name: string; watts: number }[] = [
   { name: 'Lighting', watts: 60 },
 ]
 
-const RATE_PER_UNIT = 8 // ₹8/kWh — matches backend
+// Mirrors backend/services/tariffService.js (Delhi DERC domestic slabs)
+const TARIFF_SLABS = [
+  { upto: 200, rate: 3 },
+  { upto: 400, rate: 4.5 },
+  { upto: 800, rate: 6.5 },
+  { upto: Infinity, rate: 8 },
+]
+
+// Mirrors backend/services/calculationService.js getWeeksInCurrentMonth()
+function getWeeksInCurrentMonth() {
+  const now = new Date()
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  return daysInMonth / 7
+}
+
+// Single-appliance preview only — this device's units run through the slab
+// tariff on their own, since we don't have the rest of the household's usage
+// here. The real household-wide cost (with subsidy) is on the dashboard.
+function estimateSlabCost(units: number) {
+  let remaining = units
+  let cost = 0
+  let previous = 0
+  for (const slab of TARIFF_SLABS) {
+    if (remaining <= 0) break
+    const slabUnits = Math.min(remaining, slab.upto - previous)
+    cost += slabUnits * slab.rate
+    remaining -= slabUnits
+    previous = slab.upto
+  }
+  return cost
+}
 
 export default function AddApplianceModal({
   onClose,
@@ -49,8 +79,8 @@ export default function AddApplianceModal({
   const watts = Number(form.watts) || 0
   const hours = Number(form.hoursPerDay) || 0
   const days = Number(form.daysPerWeek) || 0
-  const monthlyUnits = (watts * hours * days * 4) / 1000
-  const monthlyCost = monthlyUnits * RATE_PER_UNIT
+  const monthlyUnits = (watts * hours * days * getWeeksInCurrentMonth()) / 1000
+  const monthlyCost = estimateSlabCost(monthlyUnits)
 
   const handleChange = (field: keyof ApplianceFormData, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -219,6 +249,9 @@ export default function AddApplianceModal({
                 ₹{Math.round(monthlyCost).toLocaleString()}
               </p>
             </div>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              Based on this device alone at current slab rates — your actual household bill (with other devices and any subsidy) is on the dashboard.
+            </p>
           </div>
         )}
 

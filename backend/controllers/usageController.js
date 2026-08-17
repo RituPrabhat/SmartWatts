@@ -1,13 +1,18 @@
 const mongoose = require("mongoose");
 const UsageLog = require("../models/UsageLog");
 const Appliance = require("../models/Appliance");
+const User = require("../models/User");
 const {
   calculateWeeklyUnits,
+  calculateMonthlyUnits,
   calculateBill,
 } = require("../services/calculationService");
 
 async function logUsage(req, res) {
-  const appliances = await Appliance.find({ userId: req.user.id });
+  const [appliances, user] = await Promise.all([
+    Appliance.find({ userId: req.user.id }),
+    User.findById(req.user.id),
+  ]);
 
   if (appliances.length === 0) {
     return res.status(400).json({
@@ -15,6 +20,19 @@ async function logUsage(req, res) {
       error: "No appliances to log",
     });
   }
+
+  // Compute the household's blended rate per unit the same way the dashboard
+  // does — total monthly units run through the slab tariff once — so a
+  // single appliance's small weekly total isn't mistakenly priced as if it
+  // were the entire household's monthly consumption.
+  const totalMonthlyUnits = appliances.reduce(
+    (sum, app) =>
+      sum + calculateMonthlyUnits(app.watts, app.hoursPerDay, app.daysPerWeek),
+    0
+  );
+  const householdBill = calculateBill(totalMonthlyUnits, Boolean(user?.hasSubsidy));
+  const ratePerUnit =
+    totalMonthlyUnits > 0 ? householdBill.totalBill / totalMonthlyUnits : 0;
 
   const weekStartDate = getWeekStart(new Date());
   const logs = [];
@@ -26,8 +44,7 @@ async function logUsage(req, res) {
       app.daysPerWeek
     );
 
-    // Estimate only the energy charge (NO subsidy here)
-    const estimatedBill = calculateBill(unitsConsumed, false);
+    const cost = unitsConsumed * ratePerUnit;
 
     const log = await UsageLog.findOneAndUpdate(
       {
@@ -40,7 +57,7 @@ async function logUsage(req, res) {
         appliance: app._id,
         weekStartDate,
         unitsConsumed: Number(unitsConsumed.toFixed(2)),
-        cost: estimatedBill.energyCharge,
+        cost: Number(cost.toFixed(2)),
       },
       {
         upsert: true,

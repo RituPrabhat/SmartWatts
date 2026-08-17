@@ -3,16 +3,37 @@
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Zap, Mail, Lock, Eye, EyeOff, TrendingDown, Plug, BarChart3 } from 'lucide-react';
+import { Zap, Mail, Lock, Eye, EyeOff, AirVent, Refrigerator, WashingMachine, Lightbulb, Fan, Tv } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const FEATURES = [
-  { icon: BarChart3, title: 'Live usage analytics', desc: 'Hour-by-hour breakdown of every device' },
-  { icon: TrendingDown, title: 'Bill forecasting', desc: 'Know your next bill before it arrives' },
-  { icon: Plug, title: 'Device-level monitoring', desc: "See exactly what's drawing power" },
+const STEPS = [
+  { title: 'Add your appliances', desc: 'Pick from common presets — AC, fridge, washing machine — or add your own.' },
+  { title: 'Log usage weekly', desc: 'A one-click weekly snapshot keeps your projected bill accurate.' },
+  { title: 'See the breakdown & act', desc: 'Know which appliance is driving your cost, and what to change.' },
+];
+
+const BG_ICONS = [
+  { Icon: AirVent, size: 42, top: 70, right: 80, rotate: -6 },
+  { Icon: Refrigerator, size: 34, top: 180, right: 210, rotate: 10 },
+  { Icon: Tv, size: 38, top: 60, right: 280, rotate: 4 },
+  { Icon: Lightbulb, size: 30, top: 250, right: 100, rotate: -12 },
+  { Icon: WashingMachine, size: 36, bottom: 180, right: 60, rotate: 8 },
+  { Icon: Fan, size: 28, bottom: 110, right: 200, rotate: -10 },
+  { Icon: AirVent, size: 32, bottom: 60, right: 320, rotate: 6 },
+  { Icon: Refrigerator, size: 26, top: 340, right: 40, rotate: 14 },
+  { Icon: Fan, size: 30, bottom: 260, right: 340, rotate: -4 },
+  { Icon: Lightbulb, size: 36, top: 40, right: '40%', rotate: 9 },
+  { Icon: Tv, size: 28, top: 150, right: 400, rotate: -8 },
+  { Icon: WashingMachine, size: 32, bottom: 340, right: 130, rotate: 12 },
+  { Icon: Fan, size: 24, top: 420, right: 180, rotate: -15 },
+  { Icon: AirVent, size: 30, bottom: 20, right: 460, rotate: 5 },
+  { Icon: Refrigerator, size: 34, top: 300, right: 420, rotate: -6 },
+  { Icon: Tv, size: 26, bottom: 400, right: 280, rotate: 10 },
+  { Icon: Lightbulb, size: 38, top: 10, right: 460, rotate: -3 },
+  { Icon: WashingMachine, size: 22, bottom: 230, right: 400, rotate: 7 },
 ];
 
 export default function LoginPage() {
@@ -43,43 +64,55 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex dot-grid">
       {/* Left brand panel */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-sidebar border-r border-border">
-        <div className="flex items-center gap-2.5">
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-sidebar border-r border-border relative overflow-hidden">
+        {BG_ICONS.map(({ Icon, size, rotate, ...pos }, i) => (
+          <Icon
+            key={i}
+            className="absolute text-primary opacity-[0.24] pointer-events-none"
+            style={{ width: size, height: size, transform: `rotate(${rotate}deg)`, ...pos }}
+          />
+        ))}
+
+        <div className="flex items-center gap-2.5 relative z-10">
           <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary-foreground" />
           </div>
           <span className="text-foreground font-semibold text-lg tracking-tight">SmartWatts</span>
         </div>
 
-        <div className="space-y-10">
+        <div className="space-y-10 relative z-10">
           <div>
             <h2 className="text-4xl font-semibold text-foreground leading-tight tracking-tight">
-              Track. Save.<br />
-              <span className="text-primary">Stay in control.</span>
+              From appliance list<br />
+              <span className="text-primary">to accurate bill.</span>
             </h2>
             <p className="text-muted-foreground mt-4 text-base leading-relaxed max-w-sm">
-              Monitor your home electricity usage in real time and cut your bills with smart insights.
+              Three simple steps, and the picture stays current every week.
             </p>
           </div>
 
-          <div className="space-y-5">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="flex items-start gap-4">
-                <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <f.icon className="w-4 h-4 text-accent-foreground" />
+          <div>
+            {STEPS.map((s, i) => (
+              <div key={s.title} className="flex gap-4 relative pb-6 last:pb-0">
+                {i < STEPS.length - 1 && (
+                  <span className="absolute left-4 top-8 bottom-0 w-px bg-border" />
+                )}
+                <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center flex-shrink-0 text-sm font-semibold z-10">
+                  {i + 1}
                 </div>
                 <div>
-                  <p className="text-foreground text-sm font-medium">{f.title}</p>
-                  <p className="text-muted-foreground text-xs mt-0.5">{f.desc}</p>
+                  <p className="text-foreground text-sm font-medium">{s.title}</p>
+                  <p className="text-muted-foreground text-xs mt-0.5 max-w-xs">{s.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-border pt-6">
-          <p className="text-muted-foreground text-xs">Trusted by homeowners to reduce energy costs</p>
-          <p className="text-foreground font-medium text-sm mt-1">Avg. 23% reduction in monthly bills</p>
+        <div className="border-t border-border pt-6 relative z-10">
+          <p className="text-muted-foreground text-xs">
+            Calculated using <span className="text-foreground font-medium">real slab-based electricity tariffs</span>, with support for government subsidy connections.
+          </p>
         </div>
       </div>
 

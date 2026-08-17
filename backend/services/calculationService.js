@@ -6,13 +6,21 @@
 
 const tariff = require("./tariffService");
 
-const WEEKS_PER_MONTH = 4;
+/**
+ * Number of days in the current calendar month (28-31), read from the
+ * server clock, converted to weeks.
+ */
+function getWeeksInCurrentMonth() {
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return daysInMonth / 7;
+}
 
 /**
  * Calculate monthly units consumed by a single appliance
  */
 function calculateMonthlyUnits(watts, hoursPerDay, daysPerWeek) {
-  return (watts * hoursPerDay * daysPerWeek * WEEKS_PER_MONTH) / 1000;
+  return (watts * hoursPerDay * daysPerWeek * getWeeksInCurrentMonth()) / 1000;
 }
 
 /**

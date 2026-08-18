@@ -75,36 +75,6 @@ async function logUsage(req, res) {
   });
 }
 
-async function getUsage(req, res) {
-  const { from, to } = req.query;
-
-  const filter = {
-    userId: req.user.id,
-  };
-
-  if (from) {
-    filter.weekStartDate = {
-      $gte: new Date(from),
-    };
-  }
-
-  if (to) {
-    filter.weekStartDate = {
-      ...filter.weekStartDate,
-      $lte: new Date(to),
-    };
-  }
-
-  const logs = await UsageLog.find(filter)
-    .populate("appliance", "name watts")
-    .sort({ weekStartDate: -1 });
-
-  res.json({
-    success: true,
-    data: logs,
-  });
-}
-
 async function getWeeklyTrend(req, res) {
   const userId = new mongoose.Types.ObjectId(req.user.id);
 
@@ -184,6 +154,5 @@ function getWeekStart(date) {
 
 module.exports = {
   logUsage,
-  getUsage,
   getWeeklyTrend,
 };

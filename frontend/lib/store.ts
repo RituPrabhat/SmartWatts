@@ -66,6 +66,17 @@ export const useStore = create<SmartWattsState>((set, get) => ({
   fetchAll: async () => {
     set({ isLoading: true, error: null });
     try {
+      // Save (or refresh) this week's usage snapshot before loading data, so
+      // the weekly trend chart has something to show. Safe to call anytime —
+      // the backend upserts one row per appliance per calendar week, so this
+      // just keeps overwriting the current week's numbers until a new week
+      // starts. Ignored if the user has no appliances yet.
+      try {
+        await api.logUsageSnapshot();
+      } catch {
+        // no appliances yet, or a transient error — don't block the rest of the load
+      }
+
       const [appliances, dashboard, weeklyTrend] = await Promise.all([
         api.getAppliances(),
         api.getDashboard(),
